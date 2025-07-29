@@ -1,0 +1,81 @@
+---
+
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    hostname: nginx
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "25565:25565"
+    volumes:
+      - ./volumes/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+    networks:
+      - docker-network
+
+  ocserv:
+      image: ghcr.io/gifi71/ocserv-docker:latest
+      container_name: ocserv
+      hostname: ocserv
+      restart: unless-stopped
+
+      cap_add:
+        - NET_ADMIN
+      devices:
+        - /dev/net/tun:/dev/net/tun
+      sysctls:
+        net.ipv4.ip_forward: "1"
+      security_opt:
+        - no-new-privileges
+
+      env_file:
+        - .env
+      volumes:
+        - ./volumes/ocserv:/etc/ocserv
+
+      networks:
+        - docker-network
+
+  3x-ui:
+    image: ghcr.io/mhsanaei/3x-ui:latest
+    container_name: 3x-ui
+    hostname: 3x-ui
+    restart: unless-stopped
+  
+    environment:
+      XRAY_VMESS_AEAD_FORCED: "false"
+    ports:
+      - "127.0.0.1:2053:2053"
+    volumes:
+      - ./volumes/3x-ui/db/:/etc/x-ui/
+      - ./volumes/3x-ui/cert/:/root/cert/
+
+    tty: true
+    networks:
+      - docker-network
+
+  acme-sh:
+    image: neilpang/acme.sh
+    container_name: acme
+    hostname: acme
+    restart: unless-stopped
+
+    command: daemon
+    stdin_open: true
+    tty: true
+
+    volumes:
+      - ./volumes/acme.sh:/acme.sh
+      - ./volumes/ocserv:/etc/ocserv
+
+    networks:
+      - docker-network
+
+networks:
+  docker-network:
+    driver: bridge

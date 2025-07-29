@@ -1,0 +1,51 @@
+events {}
+
+stream {
+  log_format stream_log '$remote_addr [$time_local] '
+                        '$protocol $status $bytes_sent $bytes_received '
+                        '$session_time "$upstream_addr"';
+
+  upstream ocserv { server ocserv:443; }
+  upstream reality  { server 3x-ui:443; }
+  upstream default { server ${DEFAULT_HTTPS}; }
+
+  map $ssl_preread_server_name $backend {
+    ${OCERV_DOMAIN} ocserv;
+    ${REALITY_DOMAIN} reality;
+    default default;
+  }
+
+  server {
+    listen 443;
+    proxy_pass $backend;
+    ssl_preread on;
+    proxy_protocol on;
+    proxy_timeout 10s;
+  }
+
+  access_log /var/log/nginx/stream_access.log stream_log;
+  error_log  /var/log/nginx/stream_error.log warn;
+}
+
+http {
+  resolver 127.0.0.11 8.8.8.8 1.1.1.1 valid=10s;
+
+  map $host $backend {
+    ${OCERV_DOMAIN} acme:80;
+    default ${DEFAULT_HTTP};
+  }
+
+  server {
+    listen 80;
+
+    location / {
+      proxy_pass http://$backend;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+  }
+
+  access_log /var/log/nginx/http_access.log;
+  error_log  /var/log/nginx/http_error.log warn;
+}
