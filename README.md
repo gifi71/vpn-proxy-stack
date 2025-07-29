@@ -91,7 +91,7 @@ route = 10.0.1.0/24
 ### 🐳 Start the stack with Docker Compose
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ---
