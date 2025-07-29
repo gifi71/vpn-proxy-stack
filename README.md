@@ -104,7 +104,7 @@ docker compose up -d
 
 ---
 
-### 🔥 Configure firewall
+### 🔥 Configure firewall (optional)
 
 Example UFW rules:
 
@@ -119,10 +119,30 @@ ufw --force enable
 
 ---
 
+### 🚀 Optimize Host Networking (optional)
+
+To improve TCP performance, especially when using TCP VPN connections, you can enable the following settings by editing `/etc/sysctl.conf`:
+
+```conf
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+```
+
+Apply the changes with:
+
+```bash
+sysctl -p
+```
+
+These settings optimize packet scheduling and enable the BBR TCP congestion control algorithm, which can significantly enhance TCP throughput and reduce latency. This optimization is particularly useful if your VPN clients mainly use TCP connections.
+
+---
+
 ### 👥 Add OpenConnect VPN users
 
 ```bash
-docker exec ocserv ocpasswd -c /etc/ocserv/ocpasswd <username>
+docker exec -it ocserv bash
+/opt/ocserv/bin/ocpasswd -c /etc/ocserv/ocpasswd <user>
 ```
 
 ---
