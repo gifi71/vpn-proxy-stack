@@ -25,7 +25,6 @@ server-key = /etc/ocserv/server-key.pem
 tls-priorities = "NORMAL:%SERVER_PRECEDENCE:%COMPAT:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1"
 
 tcp-port = 443
-udp-port = 443
 listen-proxy-proto = true
 
 auth = "plain[passwd=/etc/ocserv/ocpasswd]"

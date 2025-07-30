@@ -20,11 +20,13 @@ stream {
     proxy_pass $backend;
     ssl_preread on;
     proxy_protocol on;
-    proxy_timeout 10s;
   }
 
   access_log /var/log/nginx/stream_access.log stream_log;
-  error_log  /var/log/nginx/stream_error.log warn;
+  access_log /dev/stdout stream_log;
+
+  error_log /var/log/nginx/stream_error.log warn;
+  error_log /dev/stderr warn;
 }
 
 http {
@@ -47,5 +49,8 @@ http {
   }
 
   access_log /var/log/nginx/http_access.log;
-  error_log  /var/log/nginx/http_error.log warn;
+  access_log /dev/stdout;
+
+  error_log /var/log/nginx/http_error.log warn;
+  error_log /dev/stderr warn;
 }
